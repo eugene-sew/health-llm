@@ -6,9 +6,7 @@ Fine-tune an existing open LLM (**Qwen3.5-2B-Base**) on health text, and show it
 1. `collect.py` downloads open health text: PubMed Central (per-article licence kept), MedlinePlus, Ghana STG/EML, and Hugging Face datasets.
 2. `prep.py` splits **held-out sets first**, builds continued-pre-training text, instruction data, and evaluation sets, and writes `colab_health_bundle.zip`.
 3. Colab (T4). Put the zip in Drive under `MyDrive/health-llm/`, then run in order:
-   - `notebooks/01_cpt.ipynb`: continued pre-training, LoRA, next-token loss. Produces the training/validation loss curve.
-   - `notebooks/02_sft.ipynb`: instruction tuning on medical Q&A (loss on answers only).
-   - `notebooks/03_eval.ipynb`: base vs +CPT vs +CPT+SFT. Perplexity on held-out PMC / MedlinePlus / Ghana STG / WikiText-2 (forgetting control), zero-shot MCQ accuracy (MedQA, MedMCQA, PubMedQA), GP vignettes.
+   - `notebooks/health_llm.ipynb`: one notebook, organised by the six Section C questions. Data → approaches → Stage 1 continued pre-training (LoRA) → Stage 2 instruction tuning → evaluation (base vs +CPT vs +CPT+SFT: perplexity on held-out PMC / MedlinePlus / Ghana STG / WikiText-2 forgetting control, zero-shot MCQ on MedQA, MedMCQA, PubMedQA, GP vignettes) → results → caveats.
 
 `hl_lib.py` = shared helpers (prompt format, packing, perplexity, MCQ scoring). Self-tests: `python hl_lib.py`, `.venv/bin/python prep.py --selftest`, `.venv/bin/python collect.py --selftest`.
 

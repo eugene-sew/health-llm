@@ -379,7 +379,7 @@ health-llm/
   prep.py              split held-out first, build training/eval sets, write the Colab bundle
   hl_lib.py            shared helpers: prompt format, packing, perplexity, MCQ scoring
   vignettes.jsonl      12 hand-written Ghana GP cases
-  make_notebooks.py    generates notebooks/01_cpt, 02_sft, 03_eval (.ipynb)
+  make_notebooks.py    generates notebooks/health_llm.ipynb (single notebook)
   make_figures.py      draws the figures in this report
   colab_health_bundle.zip   upload this to Google Drive (MyDrive/health-llm/)
   report_assets/       figures
