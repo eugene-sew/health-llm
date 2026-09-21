@@ -9,7 +9,7 @@ os.makedirs(BASE, exist_ok=True)
 if not os.path.exists('cpt_train.jsonl'):
     zipfile.ZipFile(f'{BASE}/colab_health_bundle.zip').extractall('.')
 sys.path.insert(0, '.')
-MODEL = 'unsloth/Qwen3.5-4B-Base'    # base (pre-trained only) model, the right start for continued pre-training. T4 too slow / out of memory: 'unsloth/Qwen3.5-2B-Base'
+MODEL = 'unsloth/Qwen3.5-2B-Base'    # base (pre-trained only) model, the right start for continued pre-training. 4B does not fit a T4: Unsloth forces float32 on Qwen3.5 there (no bf16), ~16 GB of weights vs 15 GB VRAM
 LOAD = dict(load_in_4bit=False, load_in_16bit=True, full_finetuning=False)   # Unsloth advises against 4-bit on Qwen3.5
 LORA = dict(r=32, lora_alpha=64, lora_dropout=0, use_gradient_checkpointing='unsloth', random_state=3407,
             target_modules=['q_proj', 'k_proj', 'v_proj', 'o_proj', 'gate_proj', 'up_proj', 'down_proj'])
@@ -28,7 +28,7 @@ from unsloth import FastLanguageModel, is_bfloat16_supported
 from transformers import Trainer, TrainingArguments, default_data_collator
 from datasets import Dataset
 
-BLOCK, TOKEN_BUDGET = 2048, 6_000_000      # T4: budget decides run time (roughly 1-3 hours for 4B). Lower it to finish sooner.
+BLOCK, TOKEN_BUDGET = 2048, 6_000_000      # T4: budget decides run time (fp32 on a T4 is slow). Lower it to finish sooner.
 model, tok = FastLanguageModel.from_pretrained(MODEL, max_seq_length=BLOCK, **LOAD)
 model = FastLanguageModel.get_peft_model(model, **LORA)
 docs = hl_lib.load_jsonl('cpt_train.jsonl')

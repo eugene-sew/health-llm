@@ -1,7 +1,7 @@
 # Building a Health-Domain Language Model
 ### A technical journal for Prosit 1, Section C (domain-adapted English model)
 
-**Project:** Fine-tuning an open language model (Qwen3.5-4B-Base) to work as a general-practice (GP) style health assistant
+**Project:** Fine-tuning an open language model (Qwen3.5-2B-Base) to work as a general-practice (GP) style health assistant
 **Course:** ICS554 Natural Language Processing, Ashesi University (Master's in Intelligent Computing Systems)
 **Code repository:** *(paste your GitHub link here; the prosit requires it on page 1 of the report and the slides)*
 
@@ -83,7 +83,7 @@ A *token* is a piece of a word (for example "diabetes" may be one token, an unus
 | **Instruction tuning** (supervised fine-tuning, SFT) | Practising consultations with a supervisor | Learn to *respond* to a request in a useful format, with the loss counted only on the answer | **Stage 2**: about 6,000 to 9,000 medical Q&A examples |
 | **Alignment** (not done here) | Learning bedside manner and safety | Adjust behaviour to human preferences using feedback | Out of scope; discussed in Part 8 |
 
-A **base model** has only been pre-trained; it completes text but does not reliably follow instructions. An **instruct model** has also been instruction-tuned. We deliberately start from the *base* model (`Qwen3.5-4B-Base`) so that we can attribute every change to our own two stages.
+A **base model** has only been pre-trained; it completes text but does not reliably follow instructions. An **instruct model** has also been instruction-tuned. We deliberately start from the *base* model (`Qwen3.5-2B-Base`) so that we can attribute every change to our own two stages.
 
 ### 2.3 Fine-tuning cheaply: LoRA
 
@@ -184,7 +184,7 @@ It can be read as "the effective number of equally likely next tokens the model 
 
 **What we settled on:** **C + D using F**, evaluated against the baseline A. This gives a clean three-way experiment: does Stage 1 alone help (B vs A)? does Stage 2 add more (C vs B)? It also mirrors how production domain models such as medical LLMs are commonly built, and it exercises exactly the concepts the prosit asks about.
 
-**Model choice.** We checked which models are current (September 2026): Qwen3.5 (released February 2026) has dense sizes 0.8B, 2B, 4B, 9B and 27B; Qwen3.8 exists but only as a 27B dense (too large for a T4) and larger models; no Qwen4 was announced. We chose **Qwen3.5-4B-Base** because it is the newest generation in a size that fits a free T4 with 16-bit LoRA (about 10 GB according to Unsloth's guidance). We use the **Base** variant, not the chat-tuned one, so Stage 2 is genuinely ours. The 2B-Base is the fallback if memory or time is short; 9B-Base is the upgrade on a bigger GPU.
+**Model choice.** We checked which models are current (September 2026): Qwen3.5 (released February 2026) has dense sizes 0.8B, 2B, 4B, 9B and 27B; Qwen3.8 exists but only as a 27B dense (too large for a T4) and larger models; no Qwen4 was announced. We first tried **Qwen3.5-4B-Base** (Unsloth's guidance suggested about 10 GB with 16-bit LoRA), but it ran out of memory on the T4: the T4 has no bfloat16, so Unsloth loads Qwen3.5 in float32, about 16 GB of weights on a 15 GB GPU. We therefore use **Qwen3.5-2B-Base**, the newest generation in a size that fits. We use the **Base** variant, not the chat-tuned one, so Stage 2 is genuinely ours. 4B-Base needs a GPU with bfloat16 (for example an L4 or A100); 9B-Base is the upgrade on a bigger GPU.
 
 ---
 
@@ -198,7 +198,7 @@ It can be read as "the effective number of equally likely next tokens the model 
 |---|---|
 | Hardware | Google Colab T4 GPU (16 GB, no bfloat16, so fp16 is used) |
 | Software | Unsloth (efficient LoRA training), Hugging Face Transformers v5, PyTorch |
-| Model | `Qwen3.5-4B-Base`, loaded in 16-bit (Unsloth advises **against** 4-bit quantised training for Qwen3.5 because of larger quantisation error) |
+| Model | `Qwen3.5-2B-Base`, loaded in 16-bit (Unsloth advises **against** 4-bit quantised training for Qwen3.5 because of larger quantisation error). On a T4 Unsloth falls back to float32; the 4B model ran out of memory (about 16 GB of weights on a 15 GB GPU), so we use 2B |
 | Adapter | LoRA, r = 32, α = 64, dropout 0, on q/k/v/o/gate/up/down projections; gradient checkpointing |
 | Optimiser | 8-bit AdamW, weight decay 0.01, cosine learning-rate schedule with 10 warm-up steps |
 
@@ -393,7 +393,7 @@ Self-tests: `python hl_lib.py`, `python collect.py --selftest`, `python prep.py 
 
 | Setting | Stage 1 (CPT) | Stage 2 (SFT) |
 |---|---|---|
-| Start from | Qwen3.5-4B-Base | Stage 1 adapter |
+| Start from | Qwen3.5-2B-Base | Stage 1 adapter |
 | LoRA r / α | 32 / 64 | continues the same adapter |
 | Sequence length | 2,048 (packed) | up to 1,536 per example |
 | Effective batch | 16 × 1 block (32,768 tokens) | 16 × 1 example |
@@ -412,7 +412,7 @@ Record for each run: date, GPU, trainable parameter count (printed at start), wa
 |---|---|
 | What is perplexity? | exp of the average negative log-probability per token; how surprised the model is by unseen text; lower is better; comparable only with identical tokenizer and text. |
 | Why continued pre-training before instruction tuning? | Stage 1 adds domain knowledge and vocabulary using plentiful raw text; Stage 2 needs less data and teaches how to respond. |
-| Why LoRA, not full fine-tuning? | A T4 cannot hold full fine-tuning of a 4B model; LoRA trains about a small fraction of the weights, uses little memory, and keeps the base intact. |
+| Why LoRA, not full fine-tuning? | A T4 cannot hold full fine-tuning of a multi-billion-parameter model; LoRA trains about a small fraction of the weights, uses little memory, and keeps the base intact. |
 | What does α/r do? | It scales the LoRA update; r is the rank (capacity), α controls strength. |
 | Why start from the base model, not the instruct model? | To attribute every improvement to our stages and to have a clean baseline. |
 | Why hold out data before training? | To prevent leakage; otherwise the model could look good by memorising the test set. |

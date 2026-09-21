@@ -1,6 +1,6 @@
 # Health-domain LLM (GP-style general consultation): Prosit 1, Section C
 
-Fine-tune an existing open LLM (**Qwen3.5-4B-Base**) on health text, and show it is effective **as a language model**.
+Fine-tune an existing open LLM (**Qwen3.5-2B-Base**) on health text, and show it is effective **as a language model**.
 
 ## Pipeline
 1. `collect.py` downloads open health text: PubMed Central (per-article licence kept), MedlinePlus, Ghana STG/EML, and Hugging Face datasets.

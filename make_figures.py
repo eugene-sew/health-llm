@@ -19,7 +19,7 @@ b(3.2, 2.9, 2.6, 1.1, "2. PREPARE (on laptop)\nclean, split, and hold out\nthe t
 b(6.3, 2.9, 2.6, 1.1, "3. STAGE 1: read widely\ncontinued pre-training\n(next-word prediction)", "#fde9c9")
 b(9.4, 2.9, 2.9, 1.1, "4. STAGE 2: learn to answer\ninstruction tuning\n(question to GP-style answer)", "#fde9c9")
 for x1, x2 in ((2.7, 3.2), (5.8, 6.3), (8.9, 9.4)): arrow(ax, x1, 3.45, x2, 3.45)
-b(3.2, 0.5, 2.6, 1.0, "Model A: BASE\n(untouched Qwen3.5-4B-Base)", "#eeeeee")
+b(3.2, 0.5, 2.6, 1.0, "Model A: BASE\n(untouched Qwen3.5-2B-Base)", "#eeeeee")
 b(6.3, 0.5, 2.6, 1.0, "Model B:\nbase + stage 1", "#eeeeee")
 b(9.4, 0.5, 2.9, 1.0, "Model C:\nbase + stage 1 + stage 2", "#eeeeee")
 arrow(ax, 7.6, 2.9, 7.6, 1.5); arrow(ax, 10.85, 2.9, 10.85, 1.5); arrow(ax, 5.8, 1.0, 6.3, 1.0); arrow(ax, 8.9, 1.0, 9.4, 1.0)
